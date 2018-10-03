@@ -50,8 +50,7 @@
 local lexer = {}
 
 local yield, wrap  = coroutine.yield, coroutine.wrap
-local strfind      = string.find
-local strsub       = string.sub
+local find, sub, gsub = string.find, string.sub, string.gsub
 local append       = table.insert
 local type         = type
 
@@ -197,9 +196,9 @@ function lexer.scan(s)
 						res = yield(t[1], t[2])
 					end
 				elseif (tp == "string") then -- Or search up to some special pattern:
-					local i1, i2 = strfind(s, res, idx)
+					local i1, i2 = find(s, res, idx)
 					if (i1) then
-						local tok = strsub(s, i1, i2)
+						local tok = sub(s, i1, i2)
 						idx = (i2 + 1)
 						res = yield("", tok)
 					else
@@ -227,16 +226,16 @@ function lexer.scan(s)
 				local m = lua_matches[i]
 				local pat = m[1]
 				local fun = m[2]
-				local findres = {strfind(s, pat, idx)}
+				local findres = {find(s, pat, idx)}
 				local i1, i2 = findres[1], findres[2]
 				if (i1) then
-					local tok = strsub(s, i1, i2)
+					local tok = sub(s, i1, i2)
 					idx = (i2 + 1)
 					lexer.finished = (idx > sz)
 					local res = fun(tok, findres)
-					if (tok:find("\n")) then
+					if (find(tok,"\n")) then
 						-- Update line number:
-						local _,newlines = tok:gsub("\n", {})
+						local _,newlines = gsub(tok,"\n", {})
 						line_nr = (line_nr + newlines)
 					end
 					handle_requests(res)
